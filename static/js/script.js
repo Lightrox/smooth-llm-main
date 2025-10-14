@@ -11,6 +11,10 @@ const signInBtn = document.getElementById('signInBtn');
 const signInModal = document.getElementById('signInModal');
 const signUpModal = document.getElementById('signUpModal');
 const historyModal = document.getElementById('historyModal');
+const confirmModal = document.getElementById('confirmModal');
+const confirmOkBtn = document.getElementById('confirmOk');
+const confirmCancelBtn = document.getElementById('confirmCancel');
+const confirmMessage = document.getElementById('confirmMessage');
 const perturbationPct = document.getElementById('perturbationPct');
 const perturbationValue = document.getElementById('perturbationValue');
 
@@ -40,8 +44,7 @@ function setupEventListeners() {
     // Perturbation range slider
     perturbationPct.addEventListener('input', updatePerturbationDisplay);
     
-    // Modal controls
-    signInBtn.addEventListener('click', () => openModal('signInModal'));
+    // Modal controls: do not intercept sign-in link; let it navigate to /signin
     
     // Close modals when clicking outside
     window.addEventListener('click', function(event) {
@@ -57,6 +60,11 @@ function setupEventListeners() {
             closeModal(modal.id);
         });
     });
+
+    // Confirm dialog controls
+    if (confirmCancelBtn) confirmCancelBtn.addEventListener('click', () => closeModal('confirmModal'));
+    const closeConfirm = document.querySelector('[data-close-confirm]');
+    if (closeConfirm) closeConfirm.addEventListener('click', () => closeModal('confirmModal'));
     
     // Sign in form
     document.getElementById('signInForm').addEventListener('submit', handleSignIn);
@@ -238,6 +246,19 @@ function loadUserSession() {
         currentUser = JSON.parse(savedUser);
         loadPromptHistory();
         updateUIForLoggedInUser();
+    } else {
+        // Attempt to fetch user from server session
+        fetch('/api/user')
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    loadPromptHistory();
+                    updateUIForLoggedInUser();
+                }
+            })
+            .catch(() => {});
     }
 }
 
@@ -264,27 +285,29 @@ function loadPromptHistory() {
 
 function updateUIForLoggedInUser() {
     if (currentUser) {
-        signInBtn.innerHTML = `<i class="fas fa-user"></i> ${currentUser.name}`;
-        signInBtn.href = '#';
-        signInBtn.onclick = (e) => {
-            e.preventDefault();
-            openModal('historyModal');
-        };
+        // Clear any existing dynamic buttons
+        const navActions = document.querySelector('.nav-actions');
+        if (!navActions) return;
+
+        // Reset primary button to Profile
+        signInBtn.classList.remove('btn-signin');
+        signInBtn.classList.add('btn-nav-secondary');
+        signInBtn.innerHTML = `<i class="fas fa-user"></i> Profile: ${currentUser.name}`;
+        signInBtn.href = '/profile';
+        signInBtn.onclick = null;
         
         // Add history button to navbar
         if (!document.getElementById('historyBtn')) {
             const historyBtn = document.createElement('a');
             historyBtn.id = 'historyBtn';
-            historyBtn.className = 'btn-signin';
+            historyBtn.className = 'btn-nav-secondary';
             historyBtn.innerHTML = '<i class="fas fa-history"></i> History';
-            historyBtn.style.marginRight = '1rem';
             historyBtn.href = '#';
             historyBtn.onclick = (e) => {
                 e.preventDefault();
                 openModal('historyModal');
             };
             
-            const navActions = document.querySelector('.nav-actions');
             navActions.insertBefore(historyBtn, signInBtn);
         }
         
@@ -292,16 +315,14 @@ function updateUIForLoggedInUser() {
         if (!document.getElementById('signOutBtn')) {
             const signOutBtn = document.createElement('a');
             signOutBtn.id = 'signOutBtn';
-            signOutBtn.className = 'btn-signin';
+            signOutBtn.className = 'btn-nav-secondary';
             signOutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Sign Out';
-            signOutBtn.style.marginRight = '1rem';
             signOutBtn.href = '#';
             signOutBtn.onclick = (e) => {
                 e.preventDefault();
                 handleSignOut();
             };
             
-            const navActions = document.querySelector('.nav-actions');
             navActions.insertBefore(signOutBtn, signInBtn);
         }
     }
@@ -431,12 +452,15 @@ function handleSignUp(e) {
 }
 
 function handleSignOut() {
-    if (confirm('Are you sure you want to sign out?')) {
+    // Show custom confirm modal
+    if (!confirmModal) return;
+    confirmMessage.textContent = 'Are you sure you want to sign out?';
+    openModal('confirmModal');
+    
+    const onConfirm = () => {
         fetch('/api/signout', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+            headers: { 'Content-Type': 'application/json' }
         })
         .then(response => response.json())
         .then(data => {
@@ -457,13 +481,22 @@ function handleSignOut() {
                 if (historyBtn) historyBtn.remove();
                 if (signOutBtn) signOutBtn.remove();
                 
-                alert('Successfully signed out!');
+                closeModal('confirmModal');
+                // Redirect to home
+                window.location.href = '/';
             }
         })
         .catch(error => {
             console.error('Error signing out:', error);
-            alert('Error signing out. Please try again.');
+            closeModal('confirmModal');
+        })
+        .finally(() => {
+            confirmOkBtn.removeEventListener('click', onConfirm);
         });
+    };
+    
+    if (confirmOkBtn) {
+        confirmOkBtn.addEventListener('click', onConfirm);
     }
 }
 

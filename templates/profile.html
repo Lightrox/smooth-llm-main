@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SmoothLLM</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .profile-card { background: #fff; border-radius: 20px; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,.08); }
+        .profile-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+        .avatar { width:64px; height:64px; border-radius:9999px; display:flex; align-items:center; justify-content:center; background:#eef2ff; color:#4f46e5; font-weight:700; font-size:1.25rem; }
+        .profile-grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
+        .profile-item { background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:1rem; }
+        .item-label { font-size:.85rem; color:#6b7280; margin-bottom:.25rem; }
+        .item-value { font-weight:600; color:#111827; word-break:break-word; }
+        .profile-actions { display:flex; gap:.75rem; margin-top:1.5rem; }
+        .btn-link { background:#fff; border:2px solid #e5e7eb; color:#374151; padding:.6rem 1rem; border-radius:9999px; text-decoration:none; font-weight:600; }
+        .btn-link:hover { border-color:#c7d2fe; background:#eef2ff; }
+        @media (max-width:768px){ .profile-grid { grid-template-columns:1fr; } }
+    </style>
+    </head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/" style="text-decoration:none;color:inherit;"><i class="fas fa-shield-alt"></i><span>SMOOTHLLM</span></a>
+            </div>
+            <div class="nav-actions">
+                <a href="/" class="btn-nav-secondary"><i class="fas fa-home"></i> Home</a>
+                <a href="#" id="navSignOut" class="btn-nav-secondary"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="profile-card" id="profileCard" style="display:none;">
+                <div class="profile-header">
+                    <div class="avatar" id="avatarInitial">U</div>
+                    <div>
+                        <h2 style="margin:0;" id="profileName">User</h2>
+                        <div style="color:#6b7280;">Account Details</div>
+                    </div>
+                </div>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <div class="item-label">Full Name</div>
+                        <div class="item-value" id="fieldName">—</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="item-label">Email</div>
+                        <div class="item-value" id="fieldEmail">—</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="item-label">User ID</div>
+                        <div class="item-value" id="fieldId">—</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="item-label">Member Since</div>
+                        <div class="item-value">—</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <a href="/" class="btn-link"><i class="fas fa-rocket"></i> Start Analyzing</a>
+                    <a href="#" id="profileSignOut" class="btn-link"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const navSignOut = document.getElementById('navSignOut');
+        const profileSignOut = document.getElementById('profileSignOut');
+        if (navSignOut) navSignOut.addEventListener('click', signOut);
+        if (profileSignOut) profileSignOut.addEventListener('click', signOut);
+
+        // Fetch current user from server; redirect to /signin if not authenticated
+        fetch('/api/user')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(data => {
+            if (!data || !data.user) throw new Error('unauth');
+            const user = data.user;
+            document.getElementById('profileCard').style.display = 'block';
+            document.getElementById('profileName').textContent = user.name || 'User';
+            document.getElementById('fieldName').textContent = user.name || '—';
+            document.getElementById('fieldEmail').textContent = user.email || '—';
+            document.getElementById('fieldId').textContent = user.id || '—';
+            document.getElementById('avatarInitial').textContent = (user.name ? user.name[0] : 'U').toUpperCase();
+        })
+        .catch(() => {
+            window.location.href = '/signin';
+        });
+
+        function signOut(e){
+            e.preventDefault();
+            fetch('/api/signout', {method:'POST', headers:{'Content-Type':'application/json'}})
+            .then(r=>r.json()).then(d=>{ if(d.success){ localStorage.removeItem('currentUser'); window.location.href='/'; }});
+        }
+    </script>
+</body>
+</html>
+
+

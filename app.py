@@ -121,6 +121,11 @@ def signup():
     """Render the sign-up page."""
     return render_template('signup.html')
 
+@app.route('/profile')
+def profile():
+    """Render the profile page. Client will fetch user via /api/user and redirect if unauthenticated."""
+    return render_template('profile.html')
+
 @app.route('/api/analyze', methods=['POST'])
 def analyze_prompt():
     """Analyze a prompt using SmoothLLM."""
