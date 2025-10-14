@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmoothLLM - AI Safety Defense</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-shield-alt"></i>
+                <span>SMOOTHLLM</span>
+            </div>
+            <div class="nav-actions">
+                <button id="signInBtn" class="btn-signin">
+                    <i class="fas fa-user"></i>
+                    Sign In
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="hero-title">AI Safety Defense</h1>
+                <p class="hero-subtitle">Protect your language models against jailbreaking attacks with SmoothLLM</p>
+            </div>
+
+            <!-- Main Form -->
+            <div class="form-container">
+                <form id="smoothllmForm" class="smoothllm-form">
+                    <div class="form-group">
+                        <label for="prompt" class="form-label">
+                            <i class="fas fa-edit"></i>
+                            Enter your prompt
+                        </label>
+                        <textarea 
+                            id="prompt" 
+                            name="prompt" 
+                            class="form-textarea" 
+                            placeholder="Enter the prompt you want to test for safety..."
+                            rows="4"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="perturbations" class="form-label">
+                                <i class="fas fa-cogs"></i>
+                                Number of Perturbations
+                            </label>
+                            <select id="perturbations" name="perturbations" class="form-select" required>
+                                <option value="5">5 copies</option>
+                                <option value="10" selected>10 copies</option>
+                                <option value="15">15 copies</option>
+                                <option value="20">20 copies</option>
+                                <option value="25">25 copies</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="perturbationType" class="form-label">
+                                <i class="fas fa-random"></i>
+                                Perturbation Type
+                            </label>
+                            <select id="perturbationType" name="perturbationType" class="form-select" required>
+                                <option value="RandomSwapPerturbation">Random Swap</option>
+                                <option value="RandomPatchPerturbation" selected>Random Patch</option>
+                                <option value="RandomInsertPerturbation">Random Insert</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="perturbationPct" class="form-label">
+                            <i class="fas fa-percentage"></i>
+                            Perturbation Percentage
+                        </label>
+                        <input 
+                            type="range" 
+                            id="perturbationPct" 
+                            name="perturbationPct" 
+                            min="5" 
+                            max="20" 
+                            value="10" 
+                            class="form-range"
+                        >
+                        <div class="range-labels">
+                            <span>5%</span>
+                            <span id="perturbationValue">10%</span>
+                            <span>20%</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-shield-check"></i>
+                        Analyze Safety
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="results-section" style="display: none;">
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3>Analysis Results</h3>
+                        <div id="resultStatus" class="result-status">
+                            <!-- Status will be inserted here -->
+                        </div>
+                    </div>
+                    <div class="result-details">
+                        <div class="result-item">
+                            <span class="result-label">Jailbreak Success Rate:</span>
+                            <span id="jailbreakRate" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Perturbations Used:</span>
+                            <span id="perturbationsUsed" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Perturbation Type:</span>
+                            <span id="perturbationTypeUsed" class="result-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing prompt safety...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sign In Modal -->
+    <div id="signInModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sign In</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="signInForm" class="modal-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn-primary">Sign In</button>
+                <p class="signup-link">Don't have an account? <a href="#" id="signUpLink">Sign up</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signUpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sign Up</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="signUpForm" class="modal-form">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="password" required>
+                </div>
+                <button type="submit" class="btn-primary">Sign Up</button>
+                <p class="signup-link">Already have an account? <a href="#" id="signInLink">Sign in</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Prompt History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Prompt History</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="historyContent" class="history-content">
+                <!-- History items will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
