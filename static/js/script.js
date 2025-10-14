@@ -121,6 +121,18 @@ function handleFormSubmit(e) {
         hideLoading();
         displayResults(data, requestData);
         
+        // Show mock response message if applicable
+        if (data.mock_response) {
+            const resultCard = document.querySelector('.result-card');
+            if (resultCard && data.message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'mock-message';
+                messageDiv.style.cssText = 'background: #fef3c7; color: #92400e; padding: 0.75rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem;';
+                messageDiv.innerHTML = `<i class="fas fa-info-circle"></i> ${data.message}`;
+                resultCard.appendChild(messageDiv);
+            }
+        }
+        
         // Save to history if user is logged in
         if (currentUser) {
             saveToHistory(prompt, data, requestData);

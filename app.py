@@ -88,6 +88,7 @@ def load_model():
         config = model_configs.MODELS['tinyllama']
         device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         print(f"Using device: {device}")
+        print(f"Loading model from: {config['model_path']}")
         
         target_model = language_models.LLM(
             model_path=config['model_path'],
@@ -96,9 +97,12 @@ def load_model():
             device=device
         )
         
+        print("Model loaded successfully!")
         return target_model
     except Exception as e:
         print(f"Error loading model: {e}")
+        print("This might be due to missing model files or dependencies.")
+        print("For testing purposes, the app will run with mock responses.")
         # Return a mock model for development
         return None
 
@@ -126,7 +130,44 @@ def analyze_prompt():
         # Load model
         model = load_model()
         if model is None:
-            return jsonify({'error': 'Model not available'}), 500
+            # Provide mock response for testing when model is not available
+            print("Using mock response for testing...")
+            
+            # Simple heuristic to determine if prompt is potentially harmful
+            harmful_keywords = [
+                'kill', 'murder', 'harm', 'hurt', 'attack', 'destroy', 'poison', 
+                'bomb', 'hack', 'steal', 'fraud', 'illegal', 'violence', 'weapon'
+            ]
+            
+            prompt_lower = prompt.lower()
+            is_harmful = any(keyword in prompt_lower for keyword in harmful_keywords)
+            
+            # Mock jailbreak percentage (higher for harmful prompts)
+            jb_percentage = 75.0 if is_harmful else 15.0
+            is_safe = jb_percentage < 50
+            
+            result = {
+                'jb_percentage': jb_percentage,
+                'is_safe': is_safe,
+                'total_prompts': 1,
+                'jailbroken_count': 1 if not is_safe else 0,
+                'mock_response': True,
+                'message': 'Using mock analysis (model not available)'
+            }
+            
+            # Save to history if user is logged in
+            if 'user_id' in session:
+                save_prompt_history(
+                    user_id=session['user_id'],
+                    prompt=prompt,
+                    is_safe=is_safe,
+                    jailbreak_rate=jb_percentage,
+                    perturbations=num_copies,
+                    perturbation_type=pert_type,
+                    perturbation_pct=pert_pct
+                )
+            
+            return jsonify(result)
         
         # Create attack instance with user prompt
         attack = CustomPromptAttack(
