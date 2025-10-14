@@ -116,9 +116,24 @@ function handleFormSubmit(e) {
         },
         body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         hideLoading();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
         displayResults(data, requestData);
         
         // Show mock response message if applicable
@@ -141,7 +156,20 @@ function handleFormSubmit(e) {
     .catch(error => {
         hideLoading();
         console.error('Error:', error);
-        alert('An error occurred while analyzing the prompt. Please try again.');
+        
+        // Show more specific error message
+        let errorMessage = 'An error occurred while analyzing the prompt. Please try again.';
+        
+        if (error.message) {
+            errorMessage += `\n\nError details: ${error.message}`;
+        }
+        
+        // Check if it's a network error
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            errorMessage = 'Network error: Could not connect to the server. Make sure the Flask app is running.';
+        }
+        
+        alert(errorMessage);
     });
 }
 
@@ -237,19 +265,44 @@ function loadPromptHistory() {
 function updateUIForLoggedInUser() {
     if (currentUser) {
         signInBtn.innerHTML = `<i class="fas fa-user"></i> ${currentUser.name}`;
-        signInBtn.onclick = () => openModal('historyModal');
+        signInBtn.href = '#';
+        signInBtn.onclick = (e) => {
+            e.preventDefault();
+            openModal('historyModal');
+        };
         
         // Add history button to navbar
         if (!document.getElementById('historyBtn')) {
-            const historyBtn = document.createElement('button');
+            const historyBtn = document.createElement('a');
             historyBtn.id = 'historyBtn';
             historyBtn.className = 'btn-signin';
             historyBtn.innerHTML = '<i class="fas fa-history"></i> History';
             historyBtn.style.marginRight = '1rem';
-            historyBtn.onclick = () => openModal('historyModal');
+            historyBtn.href = '#';
+            historyBtn.onclick = (e) => {
+                e.preventDefault();
+                openModal('historyModal');
+            };
             
             const navActions = document.querySelector('.nav-actions');
             navActions.insertBefore(historyBtn, signInBtn);
+        }
+        
+        // Add sign out button
+        if (!document.getElementById('signOutBtn')) {
+            const signOutBtn = document.createElement('a');
+            signOutBtn.id = 'signOutBtn';
+            signOutBtn.className = 'btn-signin';
+            signOutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Sign Out';
+            signOutBtn.style.marginRight = '1rem';
+            signOutBtn.href = '#';
+            signOutBtn.onclick = (e) => {
+                e.preventDefault();
+                handleSignOut();
+            };
+            
+            const navActions = document.querySelector('.nav-actions');
+            navActions.insertBefore(signOutBtn, signInBtn);
         }
     }
 }
@@ -375,6 +428,43 @@ function handleSignUp(e) {
         console.error('Error:', error);
         alert('An error occurred during sign up');
     });
+}
+
+function handleSignOut() {
+    if (confirm('Are you sure you want to sign out?')) {
+        fetch('/api/signout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Clear user data
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                promptHistory = [];
+                
+                // Reset UI
+                signInBtn.innerHTML = '<i class="fas fa-user"></i> Sign In';
+                signInBtn.href = '/signin';
+                signInBtn.onclick = null;
+                
+                // Remove additional buttons
+                const historyBtn = document.getElementById('historyBtn');
+                const signOutBtn = document.getElementById('signOutBtn');
+                if (historyBtn) historyBtn.remove();
+                if (signOutBtn) signOutBtn.remove();
+                
+                alert('Successfully signed out!');
+            }
+        })
+        .catch(error => {
+            console.error('Error signing out:', error);
+            alert('Error signing out. Please try again.');
+        });
+    }
 }
 
 // Utility function to format perturbation type names

@@ -111,6 +111,16 @@ def index():
     """Render the main page."""
     return render_template('index.html')
 
+@app.route('/signin')
+def signin():
+    """Render the sign-in page."""
+    return render_template('signin.html')
+
+@app.route('/signup')
+def signup():
+    """Render the sign-up page."""
+    return render_template('signup.html')
+
 @app.route('/api/analyze', methods=['POST'])
 def analyze_prompt():
     """Analyze a prompt using SmoothLLM."""
@@ -144,13 +154,13 @@ def analyze_prompt():
             
             # Mock jailbreak percentage (higher for harmful prompts)
             jb_percentage = 75.0 if is_harmful else 15.0
-            is_safe = jb_percentage < 50
+            is_safe = bool(jb_percentage < 50)
             
             result = {
-                'jb_percentage': jb_percentage,
+                'jb_percentage': float(jb_percentage),
                 'is_safe': is_safe,
                 'total_prompts': 1,
-                'jailbroken_count': 1 if not is_safe else 0,
+                'jailbroken_count': int(1 if not is_safe else 0),
                 'mock_response': True,
                 'message': 'Using mock analysis (model not available)'
             }
@@ -192,14 +202,14 @@ def analyze_prompt():
             jailbroken_results.append(jb)
         
         # Calculate results
-        jb_percentage = np.mean(jailbroken_results) * 100 if jailbroken_results else 0
-        is_safe = jb_percentage < 50
+        jb_percentage = float(np.mean(jailbroken_results) * 100) if jailbroken_results else 0.0
+        is_safe = bool(jb_percentage < 50)
         
         result = {
             'jb_percentage': jb_percentage,
             'is_safe': is_safe,
             'total_prompts': len(jailbroken_results),
-            'jailbroken_count': sum(jailbroken_results)
+            'jailbroken_count': int(sum(jailbroken_results))
         }
         
         # Save to history if user is logged in
@@ -221,7 +231,7 @@ def analyze_prompt():
         return jsonify({'error': 'Analysis failed'}), 500
 
 @app.route('/api/signin', methods=['POST'])
-def signin():
+def api_signin():
     """Handle user sign in."""
     try:
         data = request.get_json()
@@ -254,11 +264,11 @@ def signin():
             return jsonify({'error': 'Invalid email or password'}), 401
             
     except Exception as e:
-        print(f"Error in signin: {e}")
+        print(f"Error in api_signin: {e}")
         return jsonify({'error': 'Sign in failed'}), 500
 
 @app.route('/api/signup', methods=['POST'])
-def signup():
+def api_signup():
     """Handle user sign up."""
     try:
         data = request.get_json()
@@ -308,11 +318,11 @@ def signup():
         })
         
     except Exception as e:
-        print(f"Error in signup: {e}")
+        print(f"Error in api_signup: {e}")
         return jsonify({'error': 'Sign up failed'}), 500
 
 @app.route('/api/signout', methods=['POST'])
-def signout():
+def api_signout():
     """Handle user sign out."""
     session.clear()
     return jsonify({'success': True})
