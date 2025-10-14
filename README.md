@@ -1,4 +1,5 @@
 # SmoothLLM
+<<<<<<< HEAD
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -110,3 +111,6 @@ If you find this codebase useful in your research, please consider citing:
 
 ## License
 `smooth-llm` is licensed under the terms of the MIT license. See LICENSE for more details.
+=======
+College project
+>>>>>>> 7b4e1402880d8899984e0531eb3f0d408f444c13

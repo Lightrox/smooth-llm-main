@@ -36,7 +36,6 @@ def setup_model_config():
     return True
 
 def main():
-    """Main function to start the web interface."""
     print("🚀 Starting SmoothLLM Web Interface...")
     print("=" * 50)
     
