@@ -6,3 +6,4 @@ tqdm>=4.62.0
 transformers>=4.21.0
 accelerate>=0.20.0
 fastchat==0.1.0
+gunicorn>=20.1.0

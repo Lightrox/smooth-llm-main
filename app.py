@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
 # Database setup
-DATABASE = 'smoothllm.db'
+DATABASE = os.path.join(os.path.dirname(__file__), 'smoothllm.db')
 
 def init_db():
     """Initialize the database with required tables."""
@@ -494,14 +494,15 @@ def export_user_data():
         print(f"Error in export_user_data: {e}")
         return jsonify({'error': 'Failed to export data'}), 500
 
-if __name__ == '__main__':
-    # Initialize database
-    init_db()
-    
-    # Load model on startup
+# Initialize database
+init_db()
+
+# Load model on startup (only in production, not in serverless)
+if not os.environ.get('VERCEL'):
     print("Loading model...")
     load_model()
     print("Model loaded successfully!")
-    
+
+if __name__ == '__main__':
     # Run the app
     app.run(debug=True, host='0.0.0.0', port=5000)
