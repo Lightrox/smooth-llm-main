@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmoothLLM - AI Safety Defense</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Include the same markup as templates/index.html -->
+    
+    <div id="app-root"></div>
+    <script>
+        // Load the actual page from templates/index.html when served statically
+        fetch('/templates/index.html')
+            .then(r => r.text())
+            .then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+            })
+            .catch(() => {
+                document.getElementById('app-root').innerText = 'Failed to load page.';
+            });
+    </script>
+</body>
+</html>
+
+
