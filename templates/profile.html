@@ -461,7 +461,7 @@
                 profileContent.style.display = 'none';
 
                 // Fetch user data
-                const userResponse = await fetch('/api/user');
+                const userResponse = await fetch('/api/user', { credentials: 'include' });
                 if (!userResponse.ok) {
                     throw new Error('Not authenticated');
                 }
@@ -507,7 +507,7 @@
 
         async function loadUserHistory() {
             try {
-                const historyResponse = await fetch('/api/history');
+                const historyResponse = await fetch('/api/history', { credentials: 'include' });
                 if (historyResponse.ok) {
                     const historyData = await historyResponse.json();
                     userHistory = historyData.history || [];
@@ -565,7 +565,8 @@
             if (confirm('Are you sure you want to sign out?')) {
                 fetch('/api/signout', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
                 })
                 .then(response => response.json())
                 .then(data => {

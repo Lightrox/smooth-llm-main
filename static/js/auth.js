@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function checkAuthStatus() {
     // Check if user is already logged in
-    fetch('/api/user')
+    fetch('/api/user', { credentials: 'include' })
     .then(response => response.json())
     .then(data => {
         if (data.user) {
@@ -62,6 +62,7 @@ function handleSignIn(e) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password })
     })
     .then(response => response.json())
@@ -123,6 +124,7 @@ function handleSignUp(e) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ name, email, password })
     })
     .then(response => response.json())

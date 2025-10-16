@@ -1,26 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "50mb"
-      }
+      "source": "/api/(.*)",
+      "destination": "https://web-production-2b63e.up.railway.app/api/$1"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "wsgi.py"
-    }
-  ],
-  "env": {
-    "FLASK_ENV": "production"
-  },
-  "functions": {
-    "wsgi.py": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }

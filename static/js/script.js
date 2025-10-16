@@ -117,6 +117,7 @@ function handleFormSubmit(e) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(requestData)
     })
     .then(response => {
@@ -236,7 +237,7 @@ function saveToHistory(prompt, result, requestData) {
 
 function checkUserSession() {
     // Check if user is logged in via server session
-    fetch('/api/user')
+    fetch('/api/user', { credentials: 'include' })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
             if (data && data.user) {
@@ -254,7 +255,7 @@ function checkUserSession() {
 function loadPromptHistory() {
     if (currentUser) {
         // Load from server
-        fetch('/api/history')
+        fetch('/api/history', { credentials: 'include' })
         .then(response => response.json())
         .then(data => {
             if (data.history) {
@@ -367,6 +368,7 @@ function handleSignIn(e) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password })
     })
     .then(response => response.json())
@@ -412,6 +414,7 @@ function handleSignUp(e) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ name, email, password })
     })
     .then(response => response.json())
@@ -442,7 +445,8 @@ function handleSignOut() {
     const onConfirm = () => {
         fetch('/api/signout', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
         })
         .then(response => response.json())
         .then(data => {
