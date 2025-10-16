@@ -22,19 +22,14 @@ const perturbationValue = document.getElementById('perturbationValue');
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupEventListeners();
-    loadUserSession();
 });
 
 function initializeApp() {
     // Update perturbation percentage display
     updatePerturbationDisplay();
     
-    // Check if user is logged in
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUIForLoggedInUser();
-    }
+    // Check if user is logged in via server session
+    checkUserSession();
 }
 
 function setupEventListeners() {
@@ -236,35 +231,29 @@ function saveToHistory(prompt, result, requestData) {
         promptHistory = promptHistory.slice(0, 50);
     }
     
-    // Save to localStorage
-    localStorage.setItem(`promptHistory_${currentUser.id}`, JSON.stringify(promptHistory));
+    // History is automatically saved to server via the /api/analyze endpoint
 }
 
-function loadUserSession() {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        loadPromptHistory();
-        updateUIForLoggedInUser();
-    } else {
-        // Attempt to fetch user from server session
-        fetch('/api/user')
-            .then(res => res.ok ? res.json() : null)
-            .then(data => {
-                if (data && data.user) {
-                    currentUser = data.user;
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    loadPromptHistory();
-                    updateUIForLoggedInUser();
-                }
-            })
-            .catch(() => {});
-    }
+function checkUserSession() {
+    // Check if user is logged in via server session
+    fetch('/api/user')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+            if (data && data.user) {
+                currentUser = data.user;
+                loadPromptHistory();
+                updateUIForLoggedInUser();
+            }
+        })
+        .catch(() => {
+            // User not authenticated, stay on current page
+            console.log('User not authenticated');
+        });
 }
 
 function loadPromptHistory() {
     if (currentUser) {
-        // Try to load from server first
+        // Load from server
         fetch('/api/history')
         .then(response => response.json())
         .then(data => {
@@ -274,11 +263,6 @@ function loadPromptHistory() {
         })
         .catch(error => {
             console.error('Error loading history from server:', error);
-            // Fallback to localStorage
-            const savedHistory = localStorage.getItem(`promptHistory_${currentUser.id}`);
-            if (savedHistory) {
-                promptHistory = JSON.parse(savedHistory);
-            }
         });
     }
 }
@@ -293,7 +277,7 @@ function updateUIForLoggedInUser() {
         signInBtn.classList.remove('btn-signin');
         signInBtn.classList.add('btn-nav-secondary');
         signInBtn.innerHTML = `<i class="fas fa-user"></i> Profile: ${currentUser.name}`;
-        signInBtn.href = '/profile';
+        signInBtn.href = 'templates/profile.html';
         signInBtn.onclick = null;
         
         // Add history button to navbar
@@ -389,7 +373,6 @@ function handleSignIn(e) {
     .then(data => {
         if (data.success) {
             currentUser = data.user;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
             loadPromptHistory();
             updateUIForLoggedInUser();
             closeModal('signInModal');
@@ -435,7 +418,6 @@ function handleSignUp(e) {
     .then(data => {
         if (data.success) {
             currentUser = data.user;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
             loadPromptHistory();
             updateUIForLoggedInUser();
             closeModal('signUpModal');
@@ -467,7 +449,6 @@ function handleSignOut() {
             if (data.success) {
                 // Clear user data
                 currentUser = null;
-                localStorage.removeItem('currentUser');
                 promptHistory = [];
                 
                 // Reset UI

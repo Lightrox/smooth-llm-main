@@ -71,10 +71,8 @@ function handleSignIn(e) {
         if (data.success) {
             showMessage('Successfully signed in! Redirecting...', 'success');
             
-            // Store user data in localStorage
-            localStorage.setItem('currentUser', JSON.stringify(data.user));
-            
             // Redirect to home page after a short delay
+            // User data is now stored in server session
             setTimeout(() => {
                 window.location.href = '/';
             }, 1500);
@@ -134,10 +132,8 @@ function handleSignUp(e) {
         if (data.success) {
             showMessage('Account created successfully! Redirecting...', 'success');
             
-            // Store user data in localStorage
-            localStorage.setItem('currentUser', JSON.stringify(data.user));
-            
             // Redirect to home page after a short delay
+            // User data is now stored in server session
             setTimeout(() => {
                 window.location.href = '/';
             }, 1500);
