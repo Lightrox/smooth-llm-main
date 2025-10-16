@@ -397,6 +397,103 @@ def get_user():
         }
     })
 
+@app.route('/api/user/stats', methods=['GET'])
+def get_user_stats():
+    """Get user statistics."""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    try:
+        conn = get_db_connection()
+        
+        # Get total analyses count
+        total_analyses = conn.execute(
+            'SELECT COUNT(*) as count FROM prompt_history WHERE user_id = ?',
+            (session['user_id'],)
+        ).fetchone()['count']
+        
+        # Get safe/unsafe counts
+        safe_count = conn.execute(
+            'SELECT COUNT(*) as count FROM prompt_history WHERE user_id = ? AND is_safe = 1',
+            (session['user_id'],)
+        ).fetchone()['count']
+        
+        unsafe_count = total_analyses - safe_count
+        
+        # Get average jailbreak rate
+        avg_jailbreak = conn.execute(
+            'SELECT AVG(jailbreak_rate) as avg_rate FROM prompt_history WHERE user_id = ?',
+            (session['user_id'],)
+        ).fetchone()['avg_rate'] or 0
+        
+        conn.close()
+        
+        return jsonify({
+            'total_analyses': total_analyses,
+            'safe_prompts': safe_count,
+            'unsafe_prompts': unsafe_count,
+            'avg_jailbreak_rate': round(avg_jailbreak, 1)
+        })
+        
+    except Exception as e:
+        print(f"Error in get_user_stats: {e}")
+        return jsonify({'error': 'Failed to fetch statistics'}), 500
+
+@app.route('/api/user/export', methods=['GET'])
+def export_user_data():
+    """Export user data as JSON."""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    try:
+        conn = get_db_connection()
+        
+        # Get user info
+        user = conn.execute(
+            'SELECT * FROM users WHERE id = ?', (session['user_id'],)
+        ).fetchone()
+        
+        # Get user history
+        history = conn.execute(
+            '''SELECT * FROM prompt_history 
+               WHERE user_id = ? 
+               ORDER BY created_at DESC''',
+            (session['user_id'],)
+        ).fetchall()
+        
+        conn.close()
+        
+        # Prepare export data
+        export_data = {
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+                'created_at': user['created_at']
+            },
+            'history': [
+                {
+                    'id': item['id'],
+                    'prompt': item['prompt'],
+                    'is_safe': bool(item['is_safe']),
+                    'jailbreak_rate': item['jailbreak_rate'],
+                    'perturbations': item['perturbations'],
+                    'perturbation_type': item['perturbation_type'],
+                    'perturbation_pct': item['perturbation_pct'],
+                    'created_at': item['created_at']
+                }
+                for item in history
+            ],
+            'export_date': datetime.now().isoformat(),
+            'total_records': len(history)
+        }
+        
+        return jsonify(export_data)
+        
+    except Exception as e:
+        print(f"Error in export_user_data: {e}")
+        return jsonify({'error': 'Failed to export data'}), 500
+
 if __name__ == '__main__':
     # Initialize database
     init_db()
