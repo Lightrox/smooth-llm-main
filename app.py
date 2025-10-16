@@ -21,7 +21,8 @@ app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
 # Database setup
-DATABASE = os.path.join(os.path.dirname(__file__), 'smoothllm.db')
+# Allow overriding the database path via env var for Railway volumes
+DATABASE = os.environ.get('DATABASE', os.path.join(os.path.dirname(__file__), 'smoothllm.db'))
 
 def init_db():
     """Initialize the database with required tables."""
@@ -79,6 +80,13 @@ def verify_password(password, password_hash):
 def index():
     """Render the main page."""
     return render_template('index.html')
+
+@app.route('/health')
+def health():
+    """Simple health check for Railway."""
+    return jsonify({
+        'status': 'ok'
+    })
 
 @app.route('/signin')
 def signin():
