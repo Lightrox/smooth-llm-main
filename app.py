@@ -9,13 +9,13 @@ from datetime import datetime
 import hashlib
 import secrets
 
-# Import SmoothLLM modules
-import lib.perturbations as perturbations
-import lib.defenses as defenses
-import lib.attacks as attacks
-from lib.attacks import CustomPromptAttack
-import lib.language_models as language_models
-import lib.model_configs as model_configs
+# Import SmoothLLM modules (disabled for Netlify deployment)
+# import lib.perturbations as perturbations
+# import lib.defenses as defenses
+# import lib.attacks as attacks
+# from lib.attacks import CustomPromptAttack
+# import lib.language_models as language_models
+# import lib.model_configs as model_configs
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -72,39 +72,8 @@ def verify_password(password, password_hash):
     """Verify password against hash."""
     return hash_password(password) == password_hash
 
-# Global variables for model
-target_model = None
-device = None
-
-def load_model():
-    """Load the target model for analysis."""
-    global target_model, device
-    
-    if target_model is not None:
-        return target_model
-    
-    try:
-        # Use tinyllama as default model for web interface
-        config = model_configs.MODELS['tinyllama']
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-        print(f"Using device: {device}")
-        print(f"Loading model from: {config['model_path']}")
-        
-        target_model = language_models.LLM(
-            model_path=config['model_path'],
-            tokenizer_path=config['tokenizer_path'],
-            conv_template_name=config['conversation_template'],
-            device=device
-        )
-        
-        print("Model loaded successfully!")
-        return target_model
-    except Exception as e:
-        print(f"Error loading model: {e}")
-        print("This might be due to missing model files or dependencies.")
-        print("For testing purposes, the app will run with mock responses.")
-        # Return a mock model for development
-        return None
+# Model loading disabled for Netlify deployment
+# Using mock analysis instead
 
 @app.route('/')
 def index():
@@ -142,79 +111,31 @@ def analyze_prompt():
         if not prompt:
             return jsonify({'error': 'Prompt is required'}), 400
         
-        # Load model
-        model = load_model()
-        if model is None:
-            # Provide mock response for testing when model is not available
-            print("Using mock response for testing...")
-            
-            # Simple heuristic to determine if prompt is potentially harmful
-            harmful_keywords = [
-                'kill', 'murder', 'harm', 'hurt', 'attack', 'destroy', 'poison', 
-                'bomb', 'hack', 'steal', 'fraud', 'illegal', 'violence', 'weapon'
-            ]
-            
-            prompt_lower = prompt.lower()
-            is_harmful = any(keyword in prompt_lower for keyword in harmful_keywords)
-            
-            # Mock jailbreak percentage (higher for harmful prompts)
-            jb_percentage = 75.0 if is_harmful else 15.0
-            is_safe = bool(jb_percentage < 50)
-            
-            result = {
-                'jb_percentage': float(jb_percentage),
-                'is_safe': is_safe,
-                'total_prompts': 1,
-                'jailbroken_count': int(1 if not is_safe else 0),
-                'mock_response': True,
-                'message': 'Using mock analysis (model not available)'
-            }
-            
-            # Save to history if user is logged in
-            if 'user_id' in session:
-                save_prompt_history(
-                    user_id=session['user_id'],
-                    prompt=prompt,
-                    is_safe=is_safe,
-                    jailbreak_rate=jb_percentage,
-                    perturbations=num_copies,
-                    perturbation_type=pert_type,
-                    perturbation_pct=pert_pct
-                )
-            
-            return jsonify(result)
+        # Use mock analysis for Netlify deployment
+        print("Using mock analysis for Netlify deployment...")
         
-        # Create attack instance with user prompt
-        attack = CustomPromptAttack(
-            user_prompt=prompt,
-            target_model=model
-        )
+        # Simple heuristic to determine if prompt is potentially harmful
+        harmful_keywords = [
+            'kill', 'murder', 'harm', 'hurt', 'attack', 'destroy', 'poison', 
+            'bomb', 'hack', 'steal', 'fraud', 'illegal', 'violence', 'weapon',
+            'hate', 'discrimination', 'suicide', 'self-harm', 'dangerous',
+            'bomb', 'terrorist', 'threat', 'danger', 'weapon', 'gun'
+        ]
         
-        # Create defense instance
-        defense = defenses.SmoothLLM(
-            target_model=model,
-            pert_type=pert_type,
-            pert_pct=pert_pct,
-            num_copies=num_copies
-        )
+        prompt_lower = prompt.lower()
+        is_harmful = any(keyword in prompt_lower for keyword in harmful_keywords)
         
-        # Analyze the prompt
-        jailbroken_results = []
-        for i, prompt_obj in enumerate(attack.prompts[:1]):  # Only analyze first prompt
-            defense.set_original_prompt(prompt_obj.perturbable_prompt)
-            output = defense(prompt_obj)
-            jb = defense.is_jailbroken(output)
-            jailbroken_results.append(jb)
-        
-        # Calculate results
-        jb_percentage = float(np.mean(jailbroken_results) * 100) if jailbroken_results else 0.0
+        # Mock jailbreak percentage (higher for harmful prompts)
+        jb_percentage = 75.0 if is_harmful else 15.0
         is_safe = bool(jb_percentage < 50)
         
         result = {
-            'jb_percentage': jb_percentage,
+            'jb_percentage': float(jb_percentage),
             'is_safe': is_safe,
-            'total_prompts': len(jailbroken_results),
-            'jailbroken_count': int(sum(jailbroken_results))
+            'total_prompts': 1,
+            'jailbroken_count': int(1 if not is_safe else 0),
+            'mock_response': True,
+            'message': 'Using mock analysis (Netlify deployment - no ML models)'
         }
         
         # Save to history if user is logged in
@@ -496,12 +417,6 @@ def export_user_data():
 
 # Initialize database
 init_db()
-
-# Load model on startup (only in production, not in serverless)
-if not os.environ.get('VERCEL'):
-    print("Loading model...")
-    load_model()
-    print("Model loaded successfully!")
 
 if __name__ == '__main__':
     # Run the app

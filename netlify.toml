@@ -1,0 +1,16 @@
+[build]
+  command = "chmod +x build.sh && ./build.sh"
+  functions = "netlify/functions"
+  publish = "."
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+  FLASK_ENV = "production"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
