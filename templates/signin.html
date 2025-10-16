@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - SmoothLLM</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="/static/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -13,13 +13,13 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <a href="{{ url_for('index') }}" style="text-decoration: none; color: inherit;">
+                <a href="/" style="text-decoration: none; color: inherit;">
                     <i class="fas fa-shield-alt"></i>
                     <span>SMOOTHLLM</span>
                 </a>
             </div>
             <div class="nav-actions">
-                <a href="{{ url_for('index') }}" class="btn-signin">
+                <a href="/" class="btn-signin">
                     <i class="fas fa-arrow-left"></i>
                     Back to Home
                 </a>
@@ -87,7 +87,7 @@
                             <span>or</span>
                         </div>
 
-                        <a href="{{ url_for('signup') }}" class="btn-secondary">
+                        <a href="/templates/signup.html" class="btn-secondary">
                             <i class="fas fa-user-plus"></i>
                             Create New Account
                         </a>
@@ -110,6 +110,6 @@
         <p>Signing you in...</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script src="/static/js/auth.js"></script>
 </body>
 </html>
