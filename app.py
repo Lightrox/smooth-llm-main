@@ -17,6 +17,25 @@ import secrets
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
+# Optional CORS for cross-origin frontend (e.g., Netlify)
+try:
+    from flask_cors import CORS
+    FRONTEND_ORIGIN = os.environ.get('FRONTEND_ORIGIN')
+    if FRONTEND_ORIGIN:
+        CORS(
+            app,
+            supports_credentials=True,
+            origins=[FRONTEND_ORIGIN]
+        )
+        # Required for third-party cookie delivery over HTTPS
+        app.config.update(
+            SESSION_COOKIE_SAMESITE='None',
+            SESSION_COOKIE_SECURE=True
+        )
+except Exception:
+    # CORS not installed or not needed; proceed without it
+    pass
+
 # Database setup
 # Allow overriding the database path via env var for Railway volumes
 DATABASE = os.environ.get('DATABASE', os.path.join(os.path.dirname(__file__), 'smoothllm.db'))
