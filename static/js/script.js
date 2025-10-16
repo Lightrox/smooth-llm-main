@@ -277,7 +277,7 @@ function updateUIForLoggedInUser() {
         signInBtn.classList.remove('btn-signin');
         signInBtn.classList.add('btn-nav-secondary');
         signInBtn.innerHTML = `<i class="fas fa-user"></i> Profile: ${currentUser.name}`;
-        signInBtn.href = 'templates/profile.html';
+        signInBtn.href = '/profile';
         signInBtn.onclick = null;
         
         // Add history button to navbar

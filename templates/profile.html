@@ -570,14 +570,12 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        localStorage.removeItem('currentUser');
                         window.location.href = '/';
                     }
                 })
                 .catch(error => {
                     console.error('Error signing out:', error);
                     // Still redirect even if API call fails
-                    localStorage.removeItem('currentUser');
                     window.location.href = '/';
                 });
             }
