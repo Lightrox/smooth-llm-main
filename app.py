@@ -1,8 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session
 import os
-import torch
-import numpy as np
-import pandas as pd
 import json
 import sqlite3
 from datetime import datetime
