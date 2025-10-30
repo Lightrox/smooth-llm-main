@@ -281,20 +281,7 @@ function updateUIForLoggedInUser() {
         signInBtn.href = '/profile';
         signInBtn.onclick = null;
         
-        // Add history button to navbar
-        if (!document.getElementById('historyBtn')) {
-            const historyBtn = document.createElement('a');
-            historyBtn.id = 'historyBtn';
-            historyBtn.className = 'btn-nav-secondary';
-            historyBtn.innerHTML = '<i class="fas fa-history"></i> History';
-            historyBtn.href = '#';
-            historyBtn.onclick = (e) => {
-                e.preventDefault();
-                openModal('historyModal');
-            };
-            
-            navActions.insertBefore(historyBtn, signInBtn);
-        }
+        // History button intentionally removed from navbar after sign in
         
         // Add sign out button
         if (!document.getElementById('signOutBtn')) {
