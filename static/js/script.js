@@ -22,7 +22,6 @@ const perturbationValue = document.getElementById('perturbationValue');
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupEventListeners();
-    initBackendOrigin();
 });
 
 function initializeApp() {
@@ -31,18 +30,6 @@ function initializeApp() {
     
     // Check if user is logged in via server session
     checkUserSession();
-
-    // Point Sign In link to backend origin if configured (for Vercel frontend + separate backend)
-    try {
-        if (signInBtn) {
-            const isLoggedIn = !!currentUser;
-            if (!isLoggedIn) {
-                if (typeof buildBackendUrl === 'function') {
-                    signInBtn.href = buildBackendUrl('/signin');
-                }
-            }
-        }
-    } catch (_) {}
 }
 
 function setupEventListeners() {
@@ -92,27 +79,6 @@ function setupEventListeners() {
         closeModal('signUpModal');
         openModal('signInModal');
     });
-}
-
-// Configure backend origin for multi-origin deployments (e.g., Vercel frontend + Flask backend)
-function initBackendOrigin() {
-    try {
-        // Allow setting via localStorage to avoid hardcoding
-        // Example: localStorage.setItem('backend_origin', 'https://your-backend.example.com')
-        window.__backendOrigin = localStorage.getItem('backend_origin') || '';
-    } catch (e) {
-        window.__backendOrigin = '';
-    }
-}
-
-function buildBackendUrl(path) {
-    try {
-        const origin = window.__backendOrigin || '';
-        if (!origin) return path;
-        return origin.replace(/\/$/, '') + path;
-    } catch (_) {
-        return path;
-    }
 }
 
 function updatePerturbationDisplay() {
@@ -312,7 +278,7 @@ function updateUIForLoggedInUser() {
         signInBtn.classList.remove('btn-signin');
         signInBtn.classList.add('btn-nav-secondary');
         signInBtn.innerHTML = `<i class="fas fa-user"></i> Profile: ${currentUser.name}`;
-        signInBtn.href = buildBackendUrl('/profile');
+        signInBtn.href = '/profile';
         signInBtn.onclick = null;
         
         // Add history button to navbar

@@ -4,6 +4,26 @@
     {
       "source": "/api/(.*)",
       "destination": "https://web-production-2b63e.up.railway.app/api/$1"
+    },
+    {
+      "source": "/signin",
+      "destination": "https://web-production-2b63e.up.railway.app/signin"
+    },
+    {
+      "source": "/signup",
+      "destination": "https://web-production-2b63e.up.railway.app/signup"
+    },
+    {
+      "source": "/profile",
+      "destination": "https://web-production-2b63e.up.railway.app/profile"
+    },
+    {
+      "source": "/static/(.*)",
+      "destination": "https://web-production-2b63e.up.railway.app/static/$1"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "https://web-production-2b63e.up.railway.app/assets/$1"
     }
   ]
 }
