@@ -10,7 +10,6 @@ const loadingSpinner = document.getElementById('loadingSpinner');
 const signInBtn = document.getElementById('signInBtn');
 const signInModal = document.getElementById('signInModal');
 const signUpModal = document.getElementById('signUpModal');
-const historyModal = document.getElementById('historyModal');
 const confirmModal = document.getElementById('confirmModal');
 const confirmOkBtn = document.getElementById('confirmOk');
 const confirmCancelBtn = document.getElementById('confirmCancel');
@@ -302,13 +301,10 @@ function updateUIForLoggedInUser() {
 
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
+    if (!modal) return;
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
-    
-    if (modalId === 'historyModal') {
-        displayPromptHistory();
-    }
-}
+} // No history modal logic
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -316,26 +312,7 @@ function closeModal(modalId) {
     document.body.style.overflow = 'auto';
 }
 
-function displayPromptHistory() {
-    const historyContent = document.getElementById('historyContent');
-    
-    if (promptHistory.length === 0) {
-        historyContent.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">No prompt history found.</p>';
-        return;
-    }
-    
-    historyContent.innerHTML = promptHistory.map(item => `
-        <div class="history-item">
-            <div class="history-prompt">${item.prompt}</div>
-            <div class="history-meta">
-                <span>${new Date(item.timestamp).toLocaleString()}</span>
-                <span class="history-status ${item.isSafe ? 'safe' : 'unsafe'}">
-                    ${item.isSafe ? 'Safe' : 'Unsafe'}
-                </span>
-            </div>
-        </div>
-    `).join('');
-}
+// history UI/modal logic removed
 
 function handleSignIn(e) {
     e.preventDefault();
