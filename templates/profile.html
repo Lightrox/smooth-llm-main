@@ -418,6 +418,19 @@
         </div>
     </main>
 
+    <!-- Prompt History Modal -->
+    <div id="historyModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Prompt History</h2>
+                <span class="close" onclick="document.getElementById('historyModal').style.display='none'">&times;</span>
+            </div>
+            <div id="historyContent" class="history-content" style="max-height:400px;overflow:auto;">
+                <!-- Full history items will be inserted by JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables for profile page
         let currentUser = null;
@@ -583,13 +596,23 @@
         }
 
         function viewFullHistory() {
-            // Open history modal or redirect to history page
-            if (typeof openModal === 'function') {
-                openModal('historyModal');
+            // Open the modal and populate it with userHistory
+            const modal = document.getElementById('historyModal');
+            const content = document.getElementById('historyContent');
+            if (!modal || !content) return;
+            if (userHistory.length === 0) {
+                content.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">No prompt history found.</p>';
             } else {
-                // Fallback: show history in a simple alert or redirect
-                alert('History feature will be implemented soon!');
+                content.innerHTML = userHistory
+                  .map(item => `
+                    <div class="history-item" style="border-bottom:1px solid #e5e7eb;padding:10px 0;">
+                      <div style="font-size:1rem;color:#374151;margin-bottom:3px;"><strong>Prompt:</strong> ${item.prompt}</div>
+                      <div style="font-size:0.95rem;color:#6b7280;">Jailbreak: ${item.jailbreak_rate}% | Safe: ${item.is_safe ? 'Yes' : 'No'} | ${new Date(item.created_at).toLocaleString()}</div>
+                    </div>`)
+                  .join('');
             }
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
 
         function exportUserData() {

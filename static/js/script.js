@@ -289,11 +289,10 @@ function updateUIForLoggedInUser() {
             signOutBtn.className = 'btn-nav-secondary';
             signOutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Sign Out';
             signOutBtn.href = '#';
-            signOutBtn.onclick = (e) => {
+            signOutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 handleSignOut();
-            };
-            
+            });
             navActions.insertBefore(signOutBtn, signInBtn);
         }
     }
