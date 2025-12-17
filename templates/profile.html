@@ -431,6 +431,30 @@
         </div>
     </div>
 
+    <!-- Themed Sign Out Confirmation Modal -->
+    <div id="signOutModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sign out</h2>
+                <span class="close" onclick="closeSignOutModal()">&times;</span>
+            </div>
+            <div class="modal-form">
+                <p style="color:#4b5563;font-size:0.95rem;">
+                    Are you sure you want to sign out? You can sign back in anytime to view your history and profile.
+                </p>
+                <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+                    <button type="button" class="btn-primary" onclick="confirmSignOut()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Yes, sign me out
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeSignOutModal()">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables for profile page
         let currentUser = null;
@@ -574,25 +598,43 @@
 
         function handleSignOut(e) {
             e.preventDefault();
-            
-            if (confirm('Are you sure you want to sign out?')) {
-                fetch('/api/signout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = '/';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error signing out:', error);
-                    // Still redirect even if API call fails
+            openSignOutModal();
+        }
+
+        function openSignOutModal() {
+            const modal = document.getElementById('signOutModal');
+            if (!modal) return;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSignOutModal() {
+            const modal = document.getElementById('signOutModal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function confirmSignOut() {
+            fetch('/api/signout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
                     window.location.href = '/';
-                });
-            }
+                } else {
+                    // Even if response is unexpected, return to home
+                    window.location.href = '/';
+                }
+            })
+            .catch(error => {
+                console.error('Error signing out:', error);
+                // Still redirect even if API call fails
+                window.location.href = '/';
+            });
         }
 
         function viewFullHistory() {
