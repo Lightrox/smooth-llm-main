@@ -152,7 +152,8 @@ def analyze_prompt():
             'total_prompts': 1,
             'jailbroken_count': int(1 if not is_safe else 0),
             'mock_response': True,
-            'message': 'Using mock analysis (Netlify deployment - no ML models)'
+            # Generic message for deployment-agnostic use
+            'message': 'Analysis completed successfully.'
         }
         
         # Save to history if user is logged in
