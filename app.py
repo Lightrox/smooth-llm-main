@@ -6,18 +6,11 @@ from datetime import datetime
 import hashlib
 import secrets
 
-# Import SmoothLLM modules (disabled for Netlify deployment)
-# import lib.perturbations as perturbations
-# import lib.defenses as defenses
-# import lib.attacks as attacks
-# from lib.attacks import CustomPromptAttack
-# import lib.language_models as language_models
-# import lib.model_configs as model_configs
+
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
-# Optional CORS for cross-origin frontend (e.g., Netlify)
 try:
     from flask_cors import CORS
     FRONTEND_ORIGIN = os.environ.get('FRONTEND_ORIGIN')

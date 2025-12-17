@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: smooth-llm
+    env: python
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
+      # Optional: override database path to use Render disk or persistent storage
+      # - key: DATABASE
+      #   value: /data/smoothllm.db
+
+
