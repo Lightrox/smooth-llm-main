@@ -2,7 +2,19 @@ import subprocess
 import sys
 
 # List of external dependencies (PyPI packages)
-packages = ["torch", "numpy", "pandas", "tqdm","transformers","fastchat"]
+# Includes ML stack plus web app dependencies used in this project.
+packages = [
+    "torch",
+    "numpy",
+    "pandas",
+    "tqdm",
+    "transformers",
+    "fastchat",
+    "flask",
+    "flask-cors",
+    "gunicorn",
+    "requests",
+]
 
 # Install each package
 for package in packages:
