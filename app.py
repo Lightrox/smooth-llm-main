@@ -433,6 +433,107 @@ def export_user_data():
         print(f"Error in export_user_data: {e}")
         return jsonify({'error': 'Failed to export data'}), 500
 
+@app.route('/api/user/change-password', methods=['POST'])
+def change_password():
+    """Change user password."""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    try:
+        data = request.get_json()
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+        
+        if not current_password or not new_password:
+            return jsonify({'error': 'Current password and new password are required'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'error': 'New password must be at least 6 characters'}), 400
+        
+        conn = get_db_connection()
+        
+        # Get current user
+        user = conn.execute(
+            'SELECT * FROM users WHERE id = ?', (session['user_id'],)
+        ).fetchone()
+        
+        if not user:
+            conn.close()
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Verify current password
+        if not verify_password(current_password, user['password_hash']):
+            conn.close()
+            return jsonify({'error': 'Current password is incorrect'}), 401
+        
+        # Update password
+        new_password_hash = hash_password(new_password)
+        conn.execute(
+            'UPDATE users SET password_hash = ? WHERE id = ?',
+            (new_password_hash, session['user_id'])
+        )
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Password changed successfully'})
+        
+    except Exception as e:
+        print(f"Error in change_password: {e}")
+        return jsonify({'error': 'Failed to change password'}), 500
+
+@app.route('/api/user/delete', methods=['POST'])
+def delete_account():
+    """Delete user account and all associated data."""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    try:
+        data = request.get_json()
+        password = data.get('password', '')
+        
+        if not password:
+            return jsonify({'error': 'Password is required to delete account'}), 400
+        
+        conn = get_db_connection()
+        
+        # Get current user
+        user = conn.execute(
+            'SELECT * FROM users WHERE id = ?', (session['user_id'],)
+        ).fetchone()
+        
+        if not user:
+            conn.close()
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Verify password
+        if not verify_password(password, user['password_hash']):
+            conn.close()
+            return jsonify({'error': 'Incorrect password'}), 401
+        
+        # Delete user's prompt history first (foreign key constraint)
+        conn.execute(
+            'DELETE FROM prompt_history WHERE user_id = ?',
+            (session['user_id'],)
+        )
+        
+        # Delete user account
+        conn.execute(
+            'DELETE FROM users WHERE id = ?',
+            (session['user_id'],)
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        # Clear session
+        session.clear()
+        
+        return jsonify({'success': True, 'message': 'Account deleted successfully'})
+        
+    except Exception as e:
+        print(f"Error in delete_account: {e}")
+        return jsonify({'error': 'Failed to delete account'}), 500
+
 # Initialize database
 init_db()
 

@@ -455,6 +455,90 @@
         </div>
     </div>
 
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-key" style="color: #4f46e5; margin-right: 0.5rem;"></i>Change Password</h2>
+                <span class="close" onclick="closeChangePasswordModal()">&times;</span>
+            </div>
+            <div class="modal-form">
+                <div id="changePasswordMessage" style="display:none;margin-bottom:1rem;"></div>
+                <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+                    <div class="form-group">
+                        <label for="currentPassword" class="form-label">
+                            <i class="fas fa-lock"></i> Current Password
+                        </label>
+                        <input type="password" id="currentPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword" class="form-label">
+                            <i class="fas fa-key"></i> New Password
+                        </label>
+                        <input type="password" id="newPassword" class="form-input" required minlength="6">
+                        <small style="color:#6b7280;font-size:0.85rem;">Must be at least 6 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword" class="form-label">
+                            <i class="fas fa-check-circle"></i> Confirm New Password
+                        </label>
+                        <input type="password" id="confirmNewPassword" class="form-input" required minlength="6">
+                    </div>
+                    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+                        <button type="submit" class="btn-primary" id="changePasswordSubmitBtn">
+                            <i class="fas fa-save"></i> Change Password
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeChangePasswordModal()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div id="deleteAccountModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle" style="color: #dc2626; margin-right: 0.5rem;"></i>Delete Account</h2>
+                <span class="close" onclick="closeDeleteAccountModal()">&times;</span>
+            </div>
+            <div class="modal-form">
+                <div id="deleteAccountMessage" style="display:none;margin-bottom:1rem;"></div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:1rem;margin-bottom:1.5rem;">
+                    <p style="color:#991b1b;font-weight:600;margin-bottom:0.5rem;">
+                        <i class="fas fa-exclamation-circle"></i> Warning: This action cannot be undone!
+                    </p>
+                    <p style="color:#7f1d1d;font-size:0.9rem;">
+                        Deleting your account will permanently remove:
+                    </p>
+                    <ul style="color:#7f1d1d;font-size:0.9rem;margin:0.5rem 0 0 1.5rem;">
+                        <li>Your account and profile information</li>
+                        <li>All your prompt analysis history</li>
+                        <li>All your statistics and data</li>
+                    </ul>
+                </div>
+                <form id="deleteAccountForm" onsubmit="handleDeleteAccount(event)">
+                    <div class="form-group">
+                        <label for="deletePassword" class="form-label">
+                            <i class="fas fa-lock"></i> Enter your password to confirm
+                        </label>
+                        <input type="password" id="deletePassword" class="form-input" required placeholder="Enter your current password">
+                    </div>
+                    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+                        <button type="submit" class="btn-primary" id="deleteAccountSubmitBtn" style="background:linear-gradient(135deg, #dc2626, #991b1b);">
+                            <i class="fas fa-trash"></i> Delete My Account
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeDeleteAccountModal()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables for profile page
         let currentUser = null;
@@ -682,22 +766,198 @@
             URL.revokeObjectURL(url);
         }
 
-        function changePassword() {
-            alert('Password change feature will be implemented soon!');
+        // Change Password Functions
+        function changePassword(e) {
+            if (e) e.preventDefault();
+            openChangePasswordModal();
         }
 
-        function deleteAccount() {
-            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-                if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
-                    alert('Account deletion feature will be implemented soon!');
-                }
+        function openChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                // Clear form
+                document.getElementById('changePasswordForm').reset();
+                document.getElementById('changePasswordMessage').style.display = 'none';
             }
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                document.getElementById('changePasswordForm').reset();
+                document.getElementById('changePasswordMessage').style.display = 'none';
+            }
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            const messageDiv = document.getElementById('changePasswordMessage');
+            const submitBtn = document.getElementById('changePasswordSubmitBtn');
+            
+            // Validate passwords match
+            if (newPassword !== confirmNewPassword) {
+                messageDiv.innerHTML = '<div class="message message-error"><i class="fas fa-exclamation-circle"></i><span>New passwords do not match</span></div>';
+                messageDiv.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                messageDiv.innerHTML = '<div class="message message-error"><i class="fas fa-exclamation-circle"></i><span>New password must be at least 6 characters</span></div>';
+                messageDiv.style.display = 'block';
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing Password...';
+            
+            fetch('/api/user/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageDiv.innerHTML = '<div class="message message-success"><i class="fas fa-check-circle"></i><span>Password changed successfully!</span></div>';
+                    messageDiv.style.display = 'block';
+                    document.getElementById('changePasswordForm').reset();
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        closeChangePasswordModal();
+                    }, 2000);
+                } else {
+                    messageDiv.innerHTML = `<div class="message message-error"><i class="fas fa-exclamation-circle"></i><span>${data.error || 'Failed to change password'}</span></div>`;
+                    messageDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Change Password';
+                }
+            })
+            .catch(error => {
+                console.error('Error changing password:', error);
+                messageDiv.innerHTML = '<div class="message message-error"><i class="fas fa-exclamation-circle"></i><span>An error occurred. Please try again.</span></div>';
+                messageDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Change Password';
+            });
+        }
+
+        // Delete Account Functions
+        function deleteAccount(e) {
+            if (e) e.preventDefault();
+            openDeleteAccountModal();
+        }
+
+        function openDeleteAccountModal() {
+            const modal = document.getElementById('deleteAccountModal');
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                // Clear form
+                document.getElementById('deleteAccountForm').reset();
+                document.getElementById('deleteAccountMessage').style.display = 'none';
+            }
+        }
+
+        function closeDeleteAccountModal() {
+            const modal = document.getElementById('deleteAccountModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                document.getElementById('deleteAccountForm').reset();
+                document.getElementById('deleteAccountMessage').style.display = 'none';
+            }
+        }
+
+        function handleDeleteAccount(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('deletePassword').value;
+            const messageDiv = document.getElementById('deleteAccountMessage');
+            const submitBtn = document.getElementById('deleteAccountSubmitBtn');
+            
+            if (!password) {
+                messageDiv.innerHTML = '<div class="message message-error"><i class="fas fa-exclamation-circle"></i><span>Please enter your password</span></div>';
+                messageDiv.style.display = 'block';
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting Account...';
+            
+            fetch('/api/user/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageDiv.innerHTML = '<div class="message message-success"><i class="fas fa-check-circle"></i><span>Account deleted successfully. Redirecting...</span></div>';
+                    messageDiv.style.display = 'block';
+                    
+                    // Redirect to home page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    messageDiv.innerHTML = `<div class="message message-error"><i class="fas fa-exclamation-circle"></i><span>${data.error || 'Failed to delete account'}</span></div>`;
+                    messageDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-trash"></i> Delete My Account';
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting account:', error);
+                messageDiv.innerHTML = '<div class="message message-error"><i class="fas fa-exclamation-circle"></i><span>An error occurred. Please try again.</span></div>';
+                messageDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-trash"></i> Delete My Account';
+            });
         }
 
         // Utility function to format dates
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const signOutModal = document.getElementById('signOutModal');
+            const changePasswordModal = document.getElementById('changePasswordModal');
+            const deleteAccountModal = document.getElementById('deleteAccountModal');
+            
+            if (event.target === signOutModal) {
+                closeSignOutModal();
+            }
+            if (event.target === changePasswordModal) {
+                closeChangePasswordModal();
+            }
+            if (event.target === deleteAccountModal) {
+                closeDeleteAccountModal();
+            }
         }
     </script>
 </body>
